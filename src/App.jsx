@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import Papa from "papaparse";
 import Overview from "./Overview.jsx";
 import Lab2Page from "./lab2/Lab2Page.jsx";
+import Customers from "./Customers.jsx";
 import ViewControls from "./components/ViewControls.jsx";
 import { prepareRows } from "./lib/metrics.js";
 
@@ -16,6 +17,7 @@ const loadCsv = (url) =>
 
 const TABS = [
   { id: "overview", label: "ภาพรวม" },
+  { id: "customers", label: "ลูกค้าสมาชิก" },
   { id: "lab2", label: "Lab 2.2 · ซ่อมกราฟ" },
 ];
 
@@ -33,14 +35,15 @@ const useWide = () => useSyncExternalStore(
 export default function App() {
   const [rows, setRows] = useState(null);
   const [products, setProducts] = useState(null);
+  const [customers, setCustomers] = useState(null);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState(() => TABS.find((t) => "#" + t.id === location.hash)?.id ?? "overview");
   const [view, setView] = useState(() => load("view") ?? "desktop");
   const [theme, setTheme] = useState(() => (document.documentElement.classList.contains("dark") ? "dark" : "light"));
 
   useEffect(() => {
-    Promise.all([loadCsv("/sales.csv"), loadCsv("/products.csv")])
-      .then(([sales, prods]) => { setRows(prepareRows(sales)); setProducts(prods); })
+    Promise.all([loadCsv("/sales.csv"), loadCsv("/products.csv"), loadCsv("/customers.csv")])
+      .then(([sales, prods, custs]) => { setRows(prepareRows(sales)); setProducts(prods); setCustomers(custs); })
       .catch((e) => setError(e.message ?? String(e)));
   }, []);
 
@@ -58,9 +61,10 @@ export default function App() {
 
   const content = (
     <div className="@container px-4 @xl:px-5 py-6 @xl:py-8">
-      {error && <p className="text-red-700 dark:text-red-400">โหลดข้อมูลไม่สำเร็จ: {error} (ตรวจว่ามี public/sales.csv และ public/products.csv)</p>}
+      {error && <p className="text-red-700 dark:text-red-400">โหลดข้อมูลไม่สำเร็จ: {error} (ตรวจว่ามี public/sales.csv, products.csv และ customers.csv)</p>}
       {!error && !rows && <p className="text-ink-3">กำลังโหลดข้อมูลยอดขาย…</p>}
       {rows && tab === "overview" && <Overview rows={rows} />}
+      {rows && tab === "customers" && <Customers rows={rows} customers={customers} />}
       {rows && tab === "lab2" && <Lab2Page rows={rows} products={products} />}
     </div>
   );

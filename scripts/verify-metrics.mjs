@@ -18,3 +18,15 @@ for (const b of [null, "สยาม", "สีลม", "อารีย์", "�
   const top = [...h].sort((x, y) => y.bills - x.bills).slice(0, 3).map((x) => `${x.hour}.00(${x.bills})`);
   console.log(`พีค ${b ?? "ทุกสาขา"}:`, top.join(", "));
 }
+
+// ---------- ลูกค้าสมาชิก (การบ้านที่ 2) ----------
+import { purchasesByMember, memberKpis, membersByBranch, memberVsWalkin, newMembersByMonth } from "../src/lib/customers.js";
+const custCsv = readFileSync(new URL("../public/customers.csv", import.meta.url), "utf8");
+const customers = Papa.parse(custCsv, { header: true, skipEmptyLines: true }).data;
+const purchases = purchasesByMember(rows);
+const mk = memberKpis(customers, purchases);
+console.log("\nสมาชิก", fmtNum(mk.members), "· เคยซื้อ", fmtNum(mk.buyers), `(${(mk.activeRate * 100).toFixed(1)}%)`,
+  "· บิลเฉลี่ย", mk.avgBills.toFixed(2), "ค่ากลาง", mk.medianBills, "· ยอดเฉลี่ย", fmtBaht(mk.avgRevenue));
+console.table(membersByBranch(customers, purchases).map((b) => ({ สาขา: b.branch, สมาชิก: b.members, เคยซื้อ: b.buyers, "%": (b.activeRate * 100).toFixed(1) })));
+console.table(memberVsWalkin(rows).map((g) => ({ กลุ่ม: g.label, บิล: g.bills, ยอด: g.revenue, เฉลี่ย: g.avgPerBill.toFixed(2), สัดส่วน: (g.share * 100).toFixed(1) })));
+console.log("สมาชิกใหม่ 2 เดือนล่าสุด:", newMembersByMonth(customers, "2026-09-20").slice(-2));
