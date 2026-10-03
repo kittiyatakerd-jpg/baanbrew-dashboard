@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* dark mode เปิดด้วย class "dark" บน <html> (ปุ่มในแถบเมนู) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* โทเคนสีตามหน้าที่ (semantic) · ออกแบบคู่ light/dark ไม่ใช่การกลับสี */
+:root {
+  --canvas: #f5f5f4;     /* พื้นหลังหน้า */
+  --surface: #ffffff;    /* การ์ด */
+  --surface-2: #fafaf9;  /* พื้นรอง เช่น กรอบกราฟ ปุ่มที่ไม่ได้เลือก */
+  --line: #e7e5e4;       /* เส้นขอบ */
+  --ink: #1c1917;        /* ตัวอักษรหลัก */
+  --ink-2: #57534e;      /* ตัวอักษรรอง 7.6:1 */
+  --ink-3: #78716c;      /* ตัวอักษรจาง 4.8:1 */
+  --brand: #8a4b1f;      /* น้ำตาลกาแฟ */
+  color-scheme: light;
+}
+.dark {
+  --canvas: #141110;
+  --surface: #1f1b18;
+  --surface-2: #2a2420;
+  --line: #3a332d;
+  --ink: #f5f0eb;        /* 15:1 บนการ์ด */
+  --ink-2: #c9bfb6;      /* 9.4:1 */
+  --ink-3: #a1958a;      /* 5.8:1 */
+  --brand: #d9a273;      /* น้ำตาลอ่อนลง ไม่จัดจ้าเกินบนพื้นมืด 7.6:1 */
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+}
+
+body { background: var(--canvas); color: var(--ink); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .theme-fade, .theme-fade * { transition: background-color .2s ease, border-color .2s ease, color .2s ease; }
+}
