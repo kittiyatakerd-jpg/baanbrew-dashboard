@@ -8,12 +8,28 @@ import { daysBetween } from "../../lab3/time.js";
  * ค่าที่เท่ากันต้องได้คะแนนเท่ากันเสมอ: score = 1 + floor(5 × จำนวนค่าที่ "น้อยกว่า" / n)
  */
 export function percentileScores(values) {
-  throw new Error("ยังไม่ได้ทำ: percentileScores");
+  const n = values.length;
+  const sorted = [...values].sort((a, b) => a - b);
+  // นับค่าที่ "น้อยกว่า" v ด้วย binary search (ตำแหน่งแรกที่ ≥ v) ค่าที่เท่ากันจึงได้ตัวนับเดียวกัน
+  const countLess = (v) => {
+    let lo = 0, hi = n;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (sorted[mid] < v) lo = mid + 1; else hi = mid;
+    }
+    return lo;
+  };
+  return values.map((v) => 1 + Math.floor((5 * countLess(v)) / n));
 }
 
 /** กติกาตั้งชื่อกลุ่ม ตรวจจากบนลงล่าง ข้อแรกที่ตรงคือคำตอบ */
 export function segmentOf(r, f) {
-  throw new Error("ยังไม่ได้ทำ: segmentOf");
+  if (r >= 4 && f >= 4) return "Champions";
+  if (r >= 3 && f >= 4) return "Loyal";
+  if (r >= 4 && f <= 2) return "New";
+  if (r <= 2 && f >= 3) return "At Risk";
+  if (r <= 2) return "Lost";
+  return "Need Attention";
 }
 
 export const SEGMENTS = [
@@ -33,5 +49,35 @@ export const SEGMENTS = [
  *   segments:  { segment, customers, revenue, revenueShare, customerShare } เรียงตาม SEGMENTS
  */
 export function computeRfm(rows, asOf) {
-  throw new Error("ยังไม่ได้ทำ: computeRfm");
+  // รวมต่อลูกค้า: วันล่าสุดที่มา, ชุดเลขบิล (บิลเดียวมีหลายแถวได้), ยอดรวม
+  const by = new Map();
+  for (const x of rows) {
+    if (!x.customer_id) continue; // walk-in ไม่ใช่สมาชิก
+    const c = by.get(x.customer_id) ?? { last: x.date, orders: new Set(), M: 0 };
+    if (x.date > c.last) c.last = x.date; // YYYY-MM-DD เทียบเป็นข้อความได้ตรง
+    c.orders.add(x.order_id);
+    c.M += x.revenue;
+    by.set(x.customer_id, c);
+  }
+
+  const customers = [...by.entries()].map(([id, c]) => ({ id, R: daysBetween(c.last, asOf), F: c.orders.size, M: c.M }));
+  // R ยิ่งน้อยยิ่งดี จึงให้คะแนนจาก −R ส่วน F และ M ยิ่งมากยิ่งดี
+  const r = percentileScores(customers.map((c) => -c.R));
+  const f = percentileScores(customers.map((c) => c.F));
+  const m = percentileScores(customers.map((c) => c.M));
+  customers.forEach((c, i) => Object.assign(c, { r: r[i], f: f[i], m: m[i], segment: segmentOf(r[i], f[i]) }));
+
+  const totalRevenue = customers.reduce((a, c) => a + c.M, 0);
+  const segments = SEGMENTS.map(({ id }) => {
+    const list = customers.filter((c) => c.segment === id);
+    const revenue = list.reduce((a, c) => a + c.M, 0);
+    return {
+      segment: id,
+      customers: list.length,
+      revenue,
+      revenueShare: totalRevenue ? revenue / totalRevenue : 0,
+      customerShare: customers.length ? list.length / customers.length : 0,
+    };
+  });
+  return { customers, segments, asOf };
 }
