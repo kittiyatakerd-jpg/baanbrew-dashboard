@@ -119,6 +119,10 @@ function SegmentCustomers({ rfm, picked, onClose }) {
           </tbody>
         </table>
       </div>
+      {/* รายชื่อ + พฤติกรรมการซื้อเป็นข้อมูลส่วนบุคคลตาม PDPA */}
+      <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        ⚠️ ข้อมูลส่วนบุคคล (PDPA): ใช้เพื่อดูแลลูกค้าของร้านตามที่ลูกค้ายินยอมไว้เท่านั้น ห้ามส่งต่อหรือเผยแพร่ เก็บไฟล์ในที่ปลอดภัย และลบเมื่อใช้เสร็จ
+      </p>
     </Card>
   );
 }
