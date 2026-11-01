@@ -1,0 +1,6 @@
+__pycache__/
+.pytest_cache/
+.env
+out/
+# เฉลยชุด test ห้ามขึ้น repo สาธารณะ
+data/tickets_test_gold.csv
